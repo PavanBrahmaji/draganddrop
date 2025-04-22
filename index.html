@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enterprise Dashboard Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/gridstack@7.2.3/dist/gridstack.min.css">
+    <link rel="stylesheet" href="./src/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="main-content">
+        <div class="header">
+          <h1>Enterprise Dashboard Builder</h1>
+          <button class="toggle-btn">
+            <ion-icon name="menu"></ion-icon>
+          </button>
+        </div>
+        <div class="grid-stack"></div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-section">
+          <h3>Widgets</h3>
+          <div class="grid-stack-item toolbar-item" data-widget-type="basic">
+            <div class="toolbar-item-img">
+              <ion-icon name="grid"></ion-icon>
+            </div>
+            <div class="toolbar-item-content">
+              <div class="toolbar-item-title">Data Summary</div>
+              <div class="toolbar-item-desc">Key metrics overview</div>
+            </div>
+          </div>
+          <div class="grid-stack-item toolbar-item" data-widget-type="chart">
+            <div class="toolbar-item-img">
+              <ion-icon name="bar-chart"></ion-icon>
+            </div>
+            <div class="toolbar-item-content">
+              <div class="toolbar-item-title">Analytics Chart</div>
+              <div class="toolbar-item-desc">Visual data representation</div>
+            </div>
+          </div>
+          <div class="grid-stack-item toolbar-item" data-widget-type="calendar">
+            <div class="toolbar-item-img">
+              <ion-icon name="calendar"></ion-icon>
+            </div>
+            <div class="toolbar-item-content">
+              <div class="toolbar-item-title">Schedule</div>
+              <div class="toolbar-item-desc">Upcoming events</div>
+            </div>
+          </div>
+          <div class="grid-stack-item toolbar-item" data-widget-type="table">
+            <div class="toolbar-item-img">
+              <ion-icon name="document-text"></ion-icon>
+            </div>
+            <div class="toolbar-item-content">
+              <div class="toolbar-item-title">Data Table</div>
+              <div class="toolbar-item-desc">Tabular data view</div>
+            </div>
+          </div>
+        </div>
+        <div class="toolbar-section">
+          <h3>Actions</h3>
+          <div class="grid-stack-item toolbar-item" data-widget-type="button">
+            <div class="toolbar-item-img">
+              <ion-icon name="play-circle"></ion-icon>
+            </div>
+            <div class="toolbar-item-content">
+              <div class="toolbar-item-title">Quick Action</div>
+              <div class="toolbar-item-desc">Trigger processes</div>
+            </div>
+          </div>
+        </div>
+        <div id="trash" class="toolbar-item">
+          <div class="toolbar-item-img">
+            <ion-icon name="trash"></ion-icon>
+          </div>
+          <div class="toolbar-item-content">
+            <div class="toolbar-item-title">Remove Widget</div>
+            <div class="toolbar-item-desc">Drop here to delete</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drop-zone">
+      <div>Return to Toolbox</div>
+    </div>
+
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script src="https://unpkg.com/gridstack@7.2.3/dist/gridstack-all.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const grid = GridStack.init({
+          cellHeight: 70,
+          margin: 8,
+          acceptWidgets: true,
+          removable: '#trash',
+          styleInHead: true,
+          float: true,
+          minRow: 10,
+          draggable: { cancel: '.no-drag' },
+          disableDrag: false
+        });
+
+        const widgetTemplates = {
+          basic: {
+            content: `
+              <button class="remove-btn">×</button>
+              <div class="widget-content">
+                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+                  <span class="widget-icon"><ion-icon name="grid"></ion-icon></span>
+                  <h3>Data Summary</h3>
+                </div>
+                <p>Key performance indicators and metrics</p>
+                <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                  <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-light);">Revenue</div>
+                    <div style="font-weight: 600; color: var(--primary-color);">$24,532</div>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-light);">Users</div>
+                    <div style="font-weight: 600; color: var(--primary-color);">1,243</div>
+                  </div>
+                </div>
+              </div>
+            `,
+            color: 'var(--card-bg)',
+            type: 'basic'
+          },
+          chart: {
+            content: `
+              <button class="remove-btn">×</button>
+              <div class="widget-content">
+                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+                  <span class="widget-icon"><ion-icon name="bar-chart"></ion-icon></span>
+                  <h3>Analytics Chart</h3>
+                </div>
+                <p>Monthly performance overview</p>
+                <canvas id="chartCanvas" style="margin-top: 1rem; max-height: 200px;"></canvas>
+              </div>
+            `,
+            color: 'var(--card-bg)',
+            type: 'chart',
+            initChart: (canvas) => {
+              return new Chart(canvas, {
+                type: 'bar',
+                data: {
+                  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                  datasets: [{
+                    label: 'Revenue ($)',
+                    data: [12000, 19000, 15000, 22000, 18000, 24000],
+                    backgroundColor: 'rgba(37, 99, 235, 0.6)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      title: {
+                        display: true,
+                        text: 'Revenue'
+                      }
+                    },
+                    x: {
+                      title: {
+                        display: true,
+                        text: 'Month'
+                      }
+                    }
+                  }
+                }
+              });
+            }
+          },
+          calendar: {
+            content: `
+              <button class="remove-btn">×</button>
+              <div class="widget-content">
+                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+                  <span class="widget-icon"><ion-icon name="calendar"></ion-icon></span>
+                  <h3>Schedule</h3>
+                </div>
+                <p>Upcoming meetings and events</p>
+                <div style="margin-top: 1rem;">
+                  <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div style="width: 32px; height: 32px; background: rgba(37, 99, 235, 0.1); color: var(--primary-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-size: 0.75rem; font-weight: 600;">10:00</div>
+                    <div>
+                      <div style="font-size: 0.8125rem; font-weight: 500;">Team Standup</div>
+                      <div style="font-size: 0.75rem; color: var(--text-light);">Daily sync meeting</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div style="width: 32px; height: 32px; background: rgba(37, 99, 235, 0.1); color: var(--primary-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-size: 0.75rem; font-weight: 600;">14:30</div>
+                    <div>
+                      <div style="font-size: 0.8125rem; font-weight: 500;">Client Call</div>
+                      <div style="font-size: 0.75rem; color: var(--text-light);">Acme Corp project</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `,
+            color: 'var(--card-bg)',
+            type: 'calendar'
+          },
+          table: {
+            content: `
+              <button class="remove-btn">×</button>
+              <div class="widget-content">
+                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+                  <span class="widget-icon"><ion-icon name="document-text"></ion-icon></span>
+                  <h3>Data Table</h3>
+                </div>
+                <div style="overflow: auto;">
+                  <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+                    <thead>
+                      <tr style="background: #f1f5f9; text-align: left;">
+                        <th style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">ID</th>
+                        <th style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Name</th>
+                        <th style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">#1001</td>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Project Alpha</td>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);"><span style="display: inline-block; padding: 0.25rem 0.5rem; background: rgba(5, 150, 105, 0.1); color: var(--success-color); border-radius: 4px; font-size: 0.6875rem;">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">#1002</td>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Project Beta</td>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);"><span style="display: inline-block; padding: 0.25rem 0.5rem; background: rgba(217, 119, 6, 0.1); color: var(--warning-color); border-radius: 4px; font-size: 0.6875rem;">Pending</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `,
+            color: 'var(--card-bg)',
+            type: 'table'
+          },
+          button: {
+            content: `
+              <button class="remove-btn">×</button>
+              <div class="widget-content">
+                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+                  <span class="widget-icon"><ion-icon name="play-circle"></ion-icon></span>
+                  <h3>Quick Action</h3>
+                </div>
+                <p>Trigger important processes</p>
+                <div style="margin-top: 1rem;">
+                  <button style="width: 100%; padding: 0.5rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 0.8125rem; cursor: pointer;">Generate Report</button>
+                </div>
+              </div>
+            `,
+            color: 'var(--card-bg)',
+            type: 'button'
+          }
+        };
+
+        function saveLayout() {
+          const widgets = grid.save();
+          
+          const enhancedWidgets = widgets.map(widget => {
+            const content = widget.content || '';
+            let type = 'custom';
+            
+            if (content.includes('Data Summary')) {
+              type = 'basic';
+            } else if (content.includes('Analytics Chart')) {
+              type = 'chart';
+            } else if (content.includes('Schedule')) {
+              type = 'calendar';
+            } else if (content.includes('Data Table')) {
+              type = 'table';
+            } else if (content.includes('Quick Action')) {
+              type = 'button';
+            }
+            
+            return {
+              ...widget,
+              type: type
+            };
+          });
+          
+          localStorage.setItem('dashboardLayout', JSON.stringify(enhancedWidgets));
+        }
+
+        function loadLayout() {
+          const savedLayout = localStorage.getItem('dashboardLayout');
+          if (savedLayout) {
+            try {
+              const widgets = JSON.parse(savedLayout);
+              
+              const mappedWidgets = widgets.map(widget => {
+                if (widget.type && widgetTemplates[widget.type]) {
+                  return {
+                    ...widget,
+                    content: widgetTemplates[widget.type].content,
+                    style: `background-color: ${widgetTemplates[widget.type].color}`
+                  };
+                }
+                return widget;
+              });
+              
+              grid.load(mappedWidgets);
+              
+              // Initialize charts for all chart widgets
+              document.querySelectorAll('.grid-stack-item').forEach(item => {
+                const canvas = item.querySelector('#chartCanvas');
+                if (canvas && widgetTemplates.chart.initChart) {
+                  widgetTemplates.chart.initChart(canvas);
+                }
+              });
+            } catch (e) {
+              console.error('Error loading layout:', e);
+              loadInitialWidgets();
+            }
+          } else {
+            loadInitialWidgets();
+          }
+        }
+
+        function loadInitialWidgets() {
+          const initialWidgets = [
+            {
+              x: 0, y: 0, w: 2, h: 2, 
+              maxW: 5, minW: 3, maxH: 5, minH: 3,
+              content: widgetTemplates.basic.content,
+              noResize: true,
+              style: `background-color: ${widgetTemplates.basic.color}`
+            },
+            {
+              x: 2, y: 0, w: 2, h: 3, 
+              maxW: 5, minW: 3, maxH: 5, minH: 3,
+              content: widgetTemplates.chart.content,
+              style: `background-color: ${widgetTemplates.chart.color}`
+            },
+            {
+              x: 4, y: 0, w: 2, h: 2, 
+              maxW: 5, minW: 3, maxH: 5, minH: 3,
+              content: widgetTemplates.table.content,
+              locked: true,
+              style: `background-color: ${widgetTemplates.table.color}`
+            },
+            {
+              x: 0, y: 2, w: 2, h: 2, 
+              maxW: 5, minW: 3, maxH: 5, minH: 3,
+              content: widgetTemplates.calendar.content,
+              style: `background-color: ${widgetTemplates.calendar.color}`
+            },
+            {
+              x: 4, y: 2, w: 2, h: 1, 
+              content: widgetTemplates.button.content,
+              style: `background-color: ${widgetTemplates.button.color}`
+            }
+          ];
+          
+          grid.load(initialWidgets);
+          
+          // Initialize charts for initial chart widgets
+          document.querySelectorAll('.grid-stack-item').forEach(item => {
+            const canvas = item.querySelector('#chartCanvas');
+            if (canvas && widgetTemplates.chart.initChart) {
+              widgetTemplates.chart.initChart(canvas);
+            }
+          });
+        }
+
+        loadLayout();
+
+        // Initialize drag-in for all toolbar items
+        GridStack.setupDragIn('.toolbar-item[data-widget-type]', {
+          appendTo: 'body',
+          helper: 'clone',
+          handle: '.toolbar-item',
+          scroll: false
+        });
+
+        // Handle chart initialization after widget is added
+        grid.on('added', (event, items) => {
+          items.forEach(item => {
+            const canvas = item.el.querySelector('#chartCanvas');
+            if (canvas && widgetTemplates.chart.initChart) {
+              widgetTemplates.chart.initChart(canvas);
+            }
+          });
+          saveLayout();
+        });
+
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const toolbar = document.querySelector('.toolbar');
+        const body = document.body;
+        const dropZone = document.querySelector('.drop-zone');
+        
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        
+        let toolbarOpen = !isMobile;
+        updateToolbarState();
+        
+        toggleBtn.addEventListener('click', () => {
+          toolbarOpen = !toolbarOpen;
+          updateToolbarState();
+        });
+
+        function updateToolbarState() {
+          if (toolbarOpen) {
+            toolbar.style.display = 'flex';
+            body.classList.add('toolbar-open');
+          } else {
+            toolbar.style.display = 'none';
+            body.classList.remove('toolbar-open');
+          }
+          
+          grid.enableMove(toolbarOpen);
+          grid.enableResize(toolbarOpen);
+        }
+
+        document.addEventListener('click', (e) => {
+          if (e.target.classList.contains('remove-btn')) {
+            const widgetEl = e.target.closest('.grid-stack-item');
+            if (widgetEl) {
+              grid.removeWidget(widgetEl, true);
+              saveLayout();
+            }
+          }
+        });
+
+        let draggedWidget = null;
+
+        document.addEventListener('dragstart', (e) => {
+          if (e.target.closest('.grid-stack-item') && !e.target.closest('.toolbar')) {
+            draggedWidget = e.target.closest('.grid-stack-item');
+          }
+        });
+
+        document.addEventListener('drop', (e) => {
+          if (draggedWidget && !e.target.closest('.grid-stack') && !e.target.closest('#trash')) {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            
+            const content = draggedWidget.querySelector('.grid-stack-item-content').innerHTML;
+            let widgetType = 'basic';
+            
+            if (content.includes('Analytics Chart')) {
+              widgetType = 'chart';
+            } else if (content.includes('Schedule')) {
+              widgetType = 'calendar';
+            } else if (content.includes('Data Table')) {
+              widgetType = 'table';
+            } else if (content.includes('Quick Action')) {
+              widgetType = 'button';
+            }
+            
+            grid.removeWidget(draggedWidget, true);
+            
+            const toolboxSection = document.querySelector('.toolbar-section');
+            const newToolboxItem = document.querySelector(`.toolbar-item[data-widget-type="${widgetType}"]`).cloneNode(true);
+            toolboxSection.appendChild(newToolboxItem);
+            
+            saveLayout();
+          }
+          draggedWidget = null;
+        });
+
+        document.addEventListener('dragover', (e) => {
+          if (draggedWidget && !e.target.closest('.grid-stack') && !e.target.closest('#trash')) {
+            e.preventDefault();
+            dropZone.classList.add('active');
+          } else {
+            dropZone.classList.remove('active');
+          }
+        });
+
+        document.addEventListener('dragend', () => {
+          dropZone.classList.remove('active');
+          draggedWidget = null;
+        });
+
+        grid.on('removed change', saveLayout);
+
+        window.addEventListener('resize', () => {
+          grid.compact();
+        });
+
+        window.removeWidget = (el) => {
+          grid.removeWidget(el, true);
+        };
+        window.saveLayout = saveLayout;
+        window.loadLayout = loadLayout;
+      });
+    </script>
+  </body>
+</html>
