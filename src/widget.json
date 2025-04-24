@@ -1,0 +1,62 @@
+[
+    {
+      "id": 1,
+      "name": "Performance Metrics",
+      "description": "Key business indicators",
+      "pic": "stats",
+      "minSize": [3, 2],
+      "maxSize": [4, 6],
+      "defaultSize": [3, 3],
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"stats\"></ion-icon></div><h3>Performance Metrics</h3></div><p>Key business indicators</p><div style=\"margin-top: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;\"><div class=\"metric-card\"><div class=\"metric-title\">Conversion Rate</div><div class=\"metric-value\">3.2%</div><div class=\"metric-change positive\"><ion-icon name=\"trending-up\"></ion-icon> 0.4%</div></div><div class=\"metric-card\"><div class=\"metric-title\">Avg. Order</div><div class=\"metric-value\">$124</div><div class=\"metric-change negative\"><ion-icon name=\"trending-down\"></ion-icon> $8</div></div></div></div>"
+    },
+    {
+      "id": 2,
+      "name": "Analytics Chart",
+      "description": "Data visualization",
+      "pic": "bar-chart",
+      "minSize": [6, 4],
+      "maxSize": [8, 6],
+      "defaultSize": [6, 4],
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"bar-chart\"></ion-icon></div><h3>Analytics Chart</h3></div><p>Monthly performance overview</p><canvas id=\"analyticsChart\" style=\"margin-top: 1rem; height: calc(100% - 60px);\"></canvas></div>"
+    },
+    {
+      "id": 3,
+      "name": "Schedule",
+      "description": "Upcoming events",
+      "pic": "calendar",
+      "minSize": [3, 4],
+      "maxSize": [5, 6],
+      "defaultSize": [3, 4],
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"calendar\"></ion-icon></div><h3>Schedule</h3></div><p>Upcoming meetings and events</p><div style=\"margin-top: 1rem;\"><div style=\"display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);\"><div style=\"width: 32px; height: 32px; background: rgba(58, 123, 213, 0.1); color: var(--primary-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-size: 0.75rem; font-weight: 600;\">10:00</div><div><div style=\"font-size: 0.8125rem; font-weight: 500;\">Executive Meeting</div><div style=\"font-size: 0.75rem; color: var(--text-light);\">Quarterly strategy review</div></div></div><div style=\"display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);\"><div style=\"width: 32px; height: 32px; background: rgba(58, 123, 213, 0.1); color: var(--primary-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-size: 0.75rem; font-weight: 600;\">14:30</div><div><div style=\"font-size: 0.8125rem; font-weight: 500;\">Client Presentation</div><div style=\"font-size: 0.75rem; color: var(--text-light);\">Acme Corporation</div></div></div></div></div>"
+    },
+    {
+      "id": 4,
+      "name": "Data Table",
+      "description": "Tabular data view",
+      "pic": "list",
+      "minSize": [6, 4],
+      "maxSize": [8, 6],
+      "defaultSize": [6, 4],
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"list\"></ion-icon></div><h3>Recent Projects</h3></div><div style=\"overflow: auto; height: calc(100% - 60px);\"><table style=\"width: 100%; border-collapse: collapse; font-size: 0.75rem;\"><thead><tr style=\"background: #f1f5f9; text-align: left;\"><th style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">Project</th><th style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">Manager</th><th style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">Status</th></tr></thead><tbody><tr><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">Market Expansion</td><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">Sarah Johnson</td><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\"><span class=\"status-badge active\">On Track</span></td></tr><tr><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">Product Redesign</td><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">Michael Chen</td><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\"><span class=\"status-badge pending\">In Review</span></td></tr><tr><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">CRM Implementation</td><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\">David Wilson</td><td style=\"padding: 0.5rem; border-bottom: 1px solid var(--border-color);\"><span class=\"status-badge inactive\">Delayed</span></td></tr></tbody></table></div></div>"
+    },
+    {
+      "id": 5,
+      "name": "Team Activity",
+      "description": "Recent updates",
+      "pic": "people",
+      "minSize": [3, 3],
+      "maxSize": [5, 5],
+      "defaultSize": [3, 3],
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"people\"></ion-icon></div><h3>Team Activity</h3></div><p>Recent updates</p></div>"
+    },
+    {
+      "id": 6,
+      "name": "Recent Messages",
+      "description": "Communication feed",
+      "pic": "mail",
+      "minSize": [3, 3],
+      "maxSize": [5, 5],
+      "defaultSize": [3, 3],
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"mail\"></ion-icon></div><h3>Recent Messages</h3></div><p>Communication feed</p></div>"
+    }
+  ]

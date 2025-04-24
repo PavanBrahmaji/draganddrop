@@ -1,502 +1,347 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Enterprise Dashboard Builder</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/gridstack@7.2.3/dist/gridstack.min.css">
-    <link rel="stylesheet" href="./src/style.css">
-  </head>
-  <body>
-    <div class="container">
-      <div class="main-content">
-        <div class="header">
-          <h1>Enterprise Dashboard Builder</h1>
-          <button class="toggle-btn">
-            <ion-icon name="menu"></ion-icon>
-          </button>
-        </div>
-        <div class="grid-stack"></div>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enterprise Dashboard</title>
+
+  <!-- Combine CSS links and add preconnect for CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="node_modules/gridstack/dist/gridstack.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="src/style.css">
+
+  <!-- Load ionicons after critical content -->
+  <script defer src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.js"></script>
+  <script nomodule defer src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+  <!-- Side Panel -->
+  <div class="side-panel collapsed" id="sidePanel">
+    <div class="side-panel-header">
+      <h5>Widget Library</h5>
+    </div>
+    <div class="sidebar" id="widgetLibrary">
+      <!-- Widgets will be dynamically loaded here from widget.json -->
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content expanded" id="mainContent">
+    <div class="dashboard-header">
+      <div class="dashboard-title">
+        <h1>Executive Dashboard</h1>
+        <p>Monitor your key performance indicators</p>
       </div>
-      <div class="toolbar">
-        <div class="toolbar-section">
-          <h3>Widgets</h3>
-          <div class="grid-stack-item toolbar-item" data-widget-type="basic">
-            <div class="toolbar-item-img">
-              <ion-icon name="grid"></ion-icon>
-            </div>
-            <div class="toolbar-item-content">
-              <div class="toolbar-item-title">Data Summary</div>
-              <div class="toolbar-item-desc">Key metrics overview</div>
-            </div>
-          </div>
-          <div class="grid-stack-item toolbar-item" data-widget-type="chart">
-            <div class="toolbar-item-img">
-              <ion-icon name="bar-chart"></ion-icon>
-            </div>
-            <div class="toolbar-item-content">
-              <div class="toolbar-item-title">Analytics Chart</div>
-              <div class="toolbar-item-desc">Visual data representation</div>
-            </div>
-          </div>
-          <div class="grid-stack-item toolbar-item" data-widget-type="calendar">
-            <div class="toolbar-item-img">
-              <ion-icon name="calendar"></ion-icon>
-            </div>
-            <div class="toolbar-item-content">
-              <div class="toolbar-item-title">Schedule</div>
-              <div class="toolbar-item-desc">Upcoming events</div>
-            </div>
-          </div>
-          <div class="grid-stack-item toolbar-item" data-widget-type="table">
-            <div class="toolbar-item-img">
-              <ion-icon name="document-text"></ion-icon>
-            </div>
-            <div class="toolbar-item-content">
-              <div class="toolbar-item-title">Data Table</div>
-              <div class="toolbar-item-desc">Tabular data view</div>
-            </div>
-          </div>
-        </div>
-        <div class="toolbar-section">
-          <h3>Actions</h3>
-          <div class="grid-stack-item toolbar-item" data-widget-type="button">
-            <div class="toolbar-item-img">
-              <ion-icon name="play-circle"></ion-icon>
-            </div>
-            <div class="toolbar-item-content">
-              <div class="toolbar-item-title">Quick Action</div>
-              <div class="toolbar-item-desc">Trigger processes</div>
-            </div>
-          </div>
-        </div>
-        <div id="trash" class="toolbar-item">
-          <div class="toolbar-item-img">
-            <ion-icon name="trash"></ion-icon>
-          </div>
-          <div class="toolbar-item-content">
-            <div class="toolbar-item-title">Remove Widget</div>
-            <div class="toolbar-item-desc">Drop here to delete</div>
-          </div>
+      <div class="dashboard-actions">
+        <button onclick="compact()" class="btn btn-primary">
+          <i class="fas fa-compress-alt"></i> Compact Layout
+        </button>
+        <div class="toggle-label">
+          Edit Mode:
+          <label class="toggle-switch">
+            <input type="checkbox" id="editToggle">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
       </div>
     </div>
+    
+    <div class="grid-stack" id="left_grid"></div>
+  </div>
 
-    <div class="drop-zone">
-      <div>Return to Toolbox</div>
-    </div>
+  <!-- Move scripts to the end of body and optimize loading -->
+  <script src="node_modules/gridstack/dist/gridstack-all.js" defer></script>
+  <script src="events.js" defer></script>
+  
+  <script>
+    // Global variable to store widget data
+    let widgetData = [];
+    
+    // Function to load widget data from JSON
+    async function loadWidgetData() {
+      try {
+        const response = await fetch('/src/widget.json');
+        if (!response.ok) {
+          throw new Error('Failed to load widget data');
+        }
+        widgetData = await response.json();
+        populateWidgetLibrary();
+      } catch (error) {
+        console.error('Error loading widget data:', error);
+        // Fallback to empty array if loading fails
+        widgetData = [];
+      }
+    }
+    
+    // Function to populate the widget library sidebar
+    function populateWidgetLibrary() {
+      const widgetLibrary = document.getElementById('widgetLibrary');
+      widgetLibrary.innerHTML = '';
+      
+      widgetData.forEach(widget => {
+        const widgetElement = document.createElement('div');
+        widgetElement.className = 'sidebar-item grid-stack-item';
+        
+        widgetElement.innerHTML = `
+          <div class="widget-header">
+            <div class="widget-icon">
+              <ion-icon name="${widget.pic}"></ion-icon>
+            </div>
+            <div>
+              <h4>${widget.name}</h4>
+              <p>${widget.description}</p>
+            </div>
+          </div>
+        `;
+        
+        widgetLibrary.appendChild(widgetElement);
+      });
+    }
+    
+    // Function to create a widget from the library
+    function createWidgetFromLibrary(widgetId) {
+      const widget = widgetData.find(w => w.id == widgetId);
+      if (!widget) return null;
+      
+      return {
+        x: 0,
+        y: 0,
+        w: widget.defaultSize[0],
+        h: widget.defaultSize[1],
+        minW: widget.minSize[0],
+        minH: widget.minSize[1],
+        maxW: widget.maxSize[0],
+        maxH: widget.maxSize[1],
+        content: `<div class="grid-stack-item-content"> <button class="close-btn" style="display: flex" onclick="removeWidget(this)">×</button>${widget.children} </div>`,
+        type: widget.name.toLowerCase().replace(/\s+/g, '-'),
+        id: `${widget.id}`
+      };
+    }
 
-    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-    <script src="https://unpkg.com/gridstack@7.2.3/dist/gridstack-all.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const grid = GridStack.init({
-          cellHeight: 70,
-          margin: 8,
-          acceptWidgets: true,
-          removable: '#trash',
-          styleInHead: true,
-          float: true,
-          minRow: 10,
-          draggable: { cancel: '.no-drag' },
-          disableDrag: false
+    // Use DOMContentLoaded to ensure the DOM is ready
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Load widget data first
+      await loadWidgetData();
+      
+      // NOTE: REAL apps would sanitize-html or DOMPurify before blindly setting innerHTML. see #2736
+      GridStack.renderCB = function(el, w) {
+        el.innerHTML = w.content;
+      };
+
+      const options = {
+        column: 12,
+        minRow: 1,
+        cellHeight: 70,
+        float: true,
+        removable: true,
+        acceptWidgets: true,
+        disableDrag: true,
+        styleInHead: true,
+        resizable: {
+          handles: 'e, se, s, sw, w'
+        }
+      };
+      
+      let grid = GridStack.init(options, '#left_grid');
+      
+      // Save layout function
+      function saveLayout() {
+        const widgets = grid.save();
+        
+        const enhancedWidgets = widgets.map(widget => {
+          // Try to determine the widget type based on content
+          let type = 'custom';
+          const widgetId = widget.id ? widget.id.replace('widget-', '') : '';
+          const matchedWidget = widgetData.find(w => w.id == widgetId);
+          
+          if (matchedWidget) {
+            type = matchedWidget.name.toLowerCase().replace(/\s+/g, '-');
+          }
+          
+          return {
+            ...widget,
+            type: type
+          };
         });
+        
+        localStorage.setItem('executiveDashboardLayout', JSON.stringify(enhancedWidgets));
+      }
 
-        const widgetTemplates = {
-          basic: {
-            content: `
-              <button class="remove-btn">×</button>
-              <div class="widget-content">
-                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-                  <span class="widget-icon"><ion-icon name="grid"></ion-icon></span>
-                  <h3>Data Summary</h3>
-                </div>
-                <p>Key performance indicators and metrics</p>
-                <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-                  <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; text-align: center;">
-                    <div style="font-size: 0.75rem; color: var(--text-light);">Revenue</div>
-                    <div style="font-weight: 600; color: var(--primary-color);">$24,532</div>
-                  </div>
-                  <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; text-align: center;">
-                    <div style="font-size: 0.75rem; color: var(--text-light);">Users</div>
-                    <div style="font-weight: 600; color: var(--primary-color);">1,243</div>
-                  </div>
-                </div>
-              </div>
-            `,
-            color: 'var(--card-bg)',
-            type: 'basic'
-          },
-          chart: {
-            content: `
-              <button class="remove-btn">×</button>
-              <div class="widget-content">
-                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-                  <span class="widget-icon"><ion-icon name="bar-chart"></ion-icon></span>
-                  <h3>Analytics Chart</h3>
-                </div>
-                <p>Monthly performance overview</p>
-                <canvas id="chartCanvas" style="margin-top: 1rem; max-height: 200px;"></canvas>
-              </div>
-            `,
-            color: 'var(--card-bg)',
-            type: 'chart',
-            initChart: (canvas) => {
-              return new Chart(canvas, {
-                type: 'bar',
-                data: {
-                  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                  datasets: [{
-                    label: 'Revenue ($)',
-                    data: [12000, 19000, 15000, 22000, 18000, 24000],
-                    backgroundColor: 'rgba(37, 99, 235, 0.6)',
-                    borderColor: 'rgba(37, 99, 235, 1)',
-                    borderWidth: 1
-                  }]
+      // Load layout function
+      function loadLayout() {
+        const savedLayout = localStorage.getItem('executiveDashboardLayout');
+        if (savedLayout) {
+          try {
+            grid.removeAll();
+            const widgets = JSON.parse(savedLayout);
+            grid.load(widgets);
+            
+            // Initialize charts after loading
+            setTimeout(initializeCharts, 100);
+          } catch (e) {
+            console.error('Error loading layout:', e);
+            loadInitialWidgets();
+          }
+        } else {
+          loadInitialWidgets();
+        }
+      }
+
+      // Load initial widgets function
+      function loadInitialWidgets() {
+        grid.removeAll();
+        
+        // Load first 3 widgets by default if no saved layout exists
+        const defaultWidgets = widgetData.slice(0, 3).map(widget => ({
+          x: 0,
+          y: 0,
+          w: widget.defaultSize[0],
+          h: widget.defaultSize[1],
+          minW: widget.minSize[0],
+          minH: widget.minSize[1],
+          maxW: widget.maxSize[0],
+          maxH: widget.maxSize[1],
+          content: `<button class="close-btn" style="display: flex;" onclick="removeWidget(this)">×</button>${widget.children}`,
+          id: `${widget.id}`
+        }));
+        
+        // Position the default widgets
+        if (defaultWidgets.length > 0) defaultWidgets[0].x = 0;
+        if (defaultWidgets.length > 1) defaultWidgets[1].x = 3;
+        if (defaultWidgets.length > 2) defaultWidgets[2].x = 6;
+        
+        grid.load(defaultWidgets);
+        setTimeout(initializeCharts, 100);
+      }
+
+      // Initialize in non-edit mode
+      const editToggle = document.getElementById('editToggle');
+      const sidePanel = document.getElementById('sidePanel');
+      const mainContent = document.getElementById('mainContent');
+      
+      editToggle.checked = false;
+      grid.enableMove(false);
+      grid.enableResize(false);
+      
+      // Initialize charts
+      function initializeCharts() {
+        const analyticsChartCtx = document.getElementById('analyticsChart');
+        if (analyticsChartCtx) {
+          new Chart(analyticsChartCtx, {
+            type: 'bar',
+            data: {
+              labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+              datasets: [{
+                label: 'Revenue ($)',
+                data: [12000, 19000, 15000, 22000, 18000, 24000],
+                backgroundColor: 'rgba(58, 123, 213, 0.6)',
+                borderColor: 'rgba(58, 123, 213, 1)',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Revenue'
+                  }
                 },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      title: {
-                        display: true,
-                        text: 'Revenue'
-                      }
-                    },
-                    x: {
-                      title: {
-                        display: true,
-                        text: 'Month'
-                      }
-                    }
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Month'
                   }
                 }
-              });
+              }
             }
-          },
-          calendar: {
-            content: `
-              <button class="remove-btn">×</button>
-              <div class="widget-content">
-                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-                  <span class="widget-icon"><ion-icon name="calendar"></ion-icon></span>
-                  <h3>Schedule</h3>
-                </div>
-                <p>Upcoming meetings and events</p>
-                <div style="margin-top: 1rem;">
-                  <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
-                    <div style="width: 32px; height: 32px; background: rgba(37, 99, 235, 0.1); color: var(--primary-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-size: 0.75rem; font-weight: 600;">10:00</div>
-                    <div>
-                      <div style="font-size: 0.8125rem; font-weight: 500;">Team Standup</div>
-                      <div style="font-size: 0.75rem; color: var(--text-light);">Daily sync meeting</div>
-                    </div>
-                  </div>
-                  <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
-                    <div style="width: 32px; height: 32px; background: rgba(37, 99, 235, 0.1); color: var(--primary-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-size: 0.75rem; font-weight: 600;">14:30</div>
-                    <div>
-                      <div style="font-size: 0.8125rem; font-weight: 500;">Client Call</div>
-                      <div style="font-size: 0.75rem; color: var(--text-light);">Acme Corp project</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `,
-            color: 'var(--card-bg)',
-            type: 'calendar'
-          },
-          table: {
-            content: `
-              <button class="remove-btn">×</button>
-              <div class="widget-content">
-                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-                  <span class="widget-icon"><ion-icon name="document-text"></ion-icon></span>
-                  <h3>Data Table</h3>
-                </div>
-                <div style="overflow: auto;">
-                  <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
-                    <thead>
-                      <tr style="background: #f1f5f9; text-align: left;">
-                        <th style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">ID</th>
-                        <th style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Name</th>
-                        <th style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">#1001</td>
-                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Project Alpha</td>
-                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);"><span style="display: inline-block; padding: 0.25rem 0.5rem; background: rgba(5, 150, 105, 0.1); color: var(--success-color); border-radius: 4px; font-size: 0.6875rem;">Active</span></td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">#1002</td>
-                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Project Beta</td>
-                        <td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);"><span style="display: inline-block; padding: 0.25rem 0.5rem; background: rgba(217, 119, 6, 0.1); color: var(--warning-color); border-radius: 4px; font-size: 0.6875rem;">Pending</span></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            `,
-            color: 'var(--card-bg)',
-            type: 'table'
-          },
-          button: {
-            content: `
-              <button class="remove-btn">×</button>
-              <div class="widget-content">
-                <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-                  <span class="widget-icon"><ion-icon name="play-circle"></ion-icon></span>
-                  <h3>Quick Action</h3>
-                </div>
-                <p>Trigger important processes</p>
-                <div style="margin-top: 1rem;">
-                  <button style="width: 100%; padding: 0.5rem; background: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 0.8125rem; cursor: pointer;">Generate Report</button>
-                </div>
-              </div>
-            `,
-            color: 'var(--card-bg)',
-            type: 'button'
-          }
-        };
+          });
+        }
+      }
 
-        function saveLayout() {
-          const widgets = grid.save();
-          
-          const enhancedWidgets = widgets.map(widget => {
-            const content = widget.content || '';
-            let type = 'custom';
-            
-            if (content.includes('Data Summary')) {
-              type = 'basic';
-            } else if (content.includes('Analytics Chart')) {
-              type = 'chart';
-            } else if (content.includes('Schedule')) {
-              type = 'calendar';
-            } else if (content.includes('Data Table')) {
-              type = 'table';
-            } else if (content.includes('Quick Action')) {
-              type = 'button';
-            }
-            
+      // Initialize charts for initial load
+      setTimeout(initializeCharts, 100);
+
+      window.compact = function() {
+        grid.compact();
+      };
+
+      window.removeWidget = function(button) {
+        const widget = button.closest('.grid-stack-item');
+        if (widget) {
+          grid.removeWidget(widget, true, true);
+          saveLayout();
+        }
+      };
+
+      // Expose save and load functions to global scope
+      window.saveLayout = saveLayout;
+      window.loadLayout = loadLayout;
+
+      // Edit mode toggle functionality
+      editToggle.addEventListener('change', function() {
+        const isEditMode = this.checked;
+        
+        // Update grid options
+        grid.enableMove(isEditMode);
+        grid.enableResize(isEditMode);
+        grid.opts.disableDrag = !isEditMode;
+        
+        // Toggle close buttons visibility
+        document.querySelectorAll('.close-btn').forEach(btn => {
+          btn.style.display = isEditMode ? 'flex' : 'none';
+        });
+        
+        // Toggle drag from sidebar
+        if (isEditMode) {
+          // Create widgets array for setupDragIn
+          const dragWidgets = widgetData.map(widget => {
             return {
-              ...widget,
-              type: type
+              w: widget.defaultSize[0],
+              h: widget.defaultSize[1],
+              minW: widget.minSize[0],
+              minH: widget.minSize[1],
+              maxW: widget.maxSize[0],
+              maxH: widget.maxSize[1],
+              content: `<button class="close-btn" style="display: flex" onclick="removeWidget(this)">×</button>${widget.children} `,
+              id: `${widget.id}`
             };
           });
           
-          localStorage.setItem('dashboardLayout', JSON.stringify(enhancedWidgets));
-        }
-
-        function loadLayout() {
-          const savedLayout = localStorage.getItem('dashboardLayout');
-          if (savedLayout) {
-            try {
-              const widgets = JSON.parse(savedLayout);
-              
-              const mappedWidgets = widgets.map(widget => {
-                if (widget.type && widgetTemplates[widget.type]) {
-                  return {
-                    ...widget,
-                    content: widgetTemplates[widget.type].content,
-                    style: `background-color: ${widgetTemplates[widget.type].color}`
-                  };
-                }
-                return widget;
-              });
-              
-              grid.load(mappedWidgets);
-              
-              // Initialize charts for all chart widgets
-              document.querySelectorAll('.grid-stack-item').forEach(item => {
-                const canvas = item.querySelector('#chartCanvas');
-                if (canvas && widgetTemplates.chart.initChart) {
-                  widgetTemplates.chart.initChart(canvas);
-                }
-              });
-            } catch (e) {
-              console.error('Error loading layout:', e);
-              loadInitialWidgets();
-            }
-          } else {
-            loadInitialWidgets();
-          }
-        }
-
-        function loadInitialWidgets() {
-          const initialWidgets = [
-            {
-              x: 0, y: 0, w: 2, h: 2, 
-              maxW: 5, minW: 3, maxH: 5, minH: 3,
-              content: widgetTemplates.basic.content,
-              noResize: true,
-              style: `background-color: ${widgetTemplates.basic.color}`
-            },
-            {
-              x: 2, y: 0, w: 2, h: 3, 
-              maxW: 5, minW: 3, maxH: 5, minH: 3,
-              content: widgetTemplates.chart.content,
-              style: `background-color: ${widgetTemplates.chart.color}`
-            },
-            {
-              x: 4, y: 0, w: 2, h: 2, 
-              maxW: 5, minW: 3, maxH: 5, minH: 3,
-              content: widgetTemplates.table.content,
-              locked: true,
-              style: `background-color: ${widgetTemplates.table.color}`
-            },
-            {
-              x: 0, y: 2, w: 2, h: 2, 
-              maxW: 5, minW: 3, maxH: 5, minH: 3,
-              content: widgetTemplates.calendar.content,
-              style: `background-color: ${widgetTemplates.calendar.color}`
-            },
-            {
-              x: 4, y: 2, w: 2, h: 1, 
-              content: widgetTemplates.button.content,
-              style: `background-color: ${widgetTemplates.button.color}`
-            }
-          ];
-          
-          grid.load(initialWidgets);
-          
-          // Initialize charts for initial chart widgets
-          document.querySelectorAll('.grid-stack-item').forEach(item => {
-            const canvas = item.querySelector('#chartCanvas');
-            if (canvas && widgetTemplates.chart.initChart) {
-              widgetTemplates.chart.initChart(canvas);
-            }
+          // Use setupDragIn with GridStackWidget array instead of helper function
+          GridStack.setupDragIn('.sidebar-item', { appendTo: 'body',helper:'clone' }, dragWidgets);
+        } else {
+          document.querySelectorAll('.sidebar-item').forEach(el => {
+            el.draggable = false;
           });
         }
-
-        loadLayout();
-
-        // Initialize drag-in for all toolbar items
-        GridStack.setupDragIn('.toolbar-item[data-widget-type]', {
-          appendTo: 'body',
-          helper: 'clone',
-          handle: '.toolbar-item',
-          scroll: false
-        });
-
-        // Handle chart initialization after widget is added
-        grid.on('added', (event, items) => {
-          items.forEach(item => {
-            const canvas = item.el.querySelector('#chartCanvas');
-            if (canvas && widgetTemplates.chart.initChart) {
-              widgetTemplates.chart.initChart(canvas);
-            }
-          });
-          saveLayout();
-        });
-
-        const toggleBtn = document.querySelector('.toggle-btn');
-        const toolbar = document.querySelector('.toolbar');
-        const body = document.body;
-        const dropZone = document.querySelector('.drop-zone');
         
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        
-        let toolbarOpen = !isMobile;
-        updateToolbarState();
-        
-        toggleBtn.addEventListener('click', () => {
-          toolbarOpen = !toolbarOpen;
-          updateToolbarState();
-        });
-
-        function updateToolbarState() {
-          if (toolbarOpen) {
-            toolbar.style.display = 'flex';
-            body.classList.add('toolbar-open');
-          } else {
-            toolbar.style.display = 'none';
-            body.classList.remove('toolbar-open');
-          }
-          
-          grid.enableMove(toolbarOpen);
-          grid.enableResize(toolbarOpen);
-        }
-
-        document.addEventListener('click', (e) => {
-          if (e.target.classList.contains('remove-btn')) {
-            const widgetEl = e.target.closest('.grid-stack-item');
-            if (widgetEl) {
-              grid.removeWidget(widgetEl, true);
-              saveLayout();
-            }
-          }
-        });
-
-        let draggedWidget = null;
-
-        document.addEventListener('dragstart', (e) => {
-          if (e.target.closest('.grid-stack-item') && !e.target.closest('.toolbar')) {
-            draggedWidget = e.target.closest('.grid-stack-item');
-          }
-        });
-
-        document.addEventListener('drop', (e) => {
-          if (draggedWidget && !e.target.closest('.grid-stack') && !e.target.closest('#trash')) {
-            e.preventDefault();
-            dropZone.classList.remove('active');
-            
-            const content = draggedWidget.querySelector('.grid-stack-item-content').innerHTML;
-            let widgetType = 'basic';
-            
-            if (content.includes('Analytics Chart')) {
-              widgetType = 'chart';
-            } else if (content.includes('Schedule')) {
-              widgetType = 'calendar';
-            } else if (content.includes('Data Table')) {
-              widgetType = 'table';
-            } else if (content.includes('Quick Action')) {
-              widgetType = 'button';
-            }
-            
-            grid.removeWidget(draggedWidget, true);
-            
-            const toolboxSection = document.querySelector('.toolbar-section');
-            const newToolboxItem = document.querySelector(`.toolbar-item[data-widget-type="${widgetType}"]`).cloneNode(true);
-            toolboxSection.appendChild(newToolboxItem);
-            
-            saveLayout();
-          }
-          draggedWidget = null;
-        });
-
-        document.addEventListener('dragover', (e) => {
-          if (draggedWidget && !e.target.closest('.grid-stack') && !e.target.closest('#trash')) {
-            e.preventDefault();
-            dropZone.classList.add('active');
-          } else {
-            dropZone.classList.remove('active');
-          }
-        });
-
-        document.addEventListener('dragend', () => {
-          dropZone.classList.remove('active');
-          draggedWidget = null;
-        });
-
-        grid.on('removed change', saveLayout);
-
-        window.addEventListener('resize', () => {
-          grid.compact();
-        });
-
-        window.removeWidget = (el) => {
-          grid.removeWidget(el, true);
-        };
-        window.saveLayout = saveLayout;
-        window.loadLayout = loadLayout;
+        // Toggle panel visibility
+        sidePanel.classList.toggle('collapsed', !isEditMode);
+        mainContent.classList.toggle('expanded', !isEditMode);
       });
-    </script>
-  </body>
+
+      // Save layout on grid changes
+      grid.on('added removed change', function() {
+        if (editToggle.checked) {
+          saveLayout();
+        }
+      });
+
+      // Load the saved layout by default or initial widgets
+      loadLayout();
+    });
+  </script>
+</body>
 </html>
