@@ -17,7 +17,7 @@
       "minSize": [6, 4],
       "maxSize": [8, 6],
       "defaultSize": [6, 4],
-      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"bar-chart\"></ion-icon></div><h3>Analytics Chart</h3></div><p>Monthly performance overview</p><canvas id=\"analyticsChart\" style=\"margin-top: 1rem; height: calc(100% - 60px);\"></canvas></div>"
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"bar-chart\"></ion-icon></div><h3>Analytics Chart</h3></div><p>Monthly performance overview</p><canvas id=\"analyticsChart\" style=\"margin-top: 1rem; height: 300px;\"></canvas></div>"
     },
     {
       "id": 3,
@@ -58,5 +58,15 @@
       "maxSize": [5, 5],
       "defaultSize": [3, 3],
       "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"mail\"></ion-icon></div><h3>Recent Messages</h3></div><p>Communication feed</p></div>"
+    },
+    {
+      "id": 7,
+      "name": "demo",
+      "description": "demo card ",
+      "pic": "hi",
+      "minSize": [1, 2],
+      "maxSize": [10, 10],
+      "defaultSize": [10, 10],
+      "children": "<div class=\"widget-content\"><div class=\"widget-header\"><div class=\"widget-icon\"><ion-icon name=\"stats\"></ion-icon></div><h3>Performance Metrics</h3></div><p>Key business indicators</p><div style=\"margin-top: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;\"><div class=\"metric-card\"><div class=\"metric-title\">Conversion Rate</div><div class=\"metric-value\">3.2%</div><div class=\"metric-change positive\"><ion-icon name=\"trending-up\"></ion-icon> 0.4%</div></div><div class=\"metric-card\"><div class=\"metric-title\">Avg. Order</div><div class=\"metric-value\">$124</div><div class=\"metric-change negative\"><ion-icon name=\"trending-down\"></ion-icon> $8</div></div></div></div>"
     }
   ]

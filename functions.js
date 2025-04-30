@@ -1,0 +1,503 @@
+
+// Global variables
+let widgetData = [];
+let activeWidgetIds = new Set(); // Track which widgets are active on the grid
+let widgetPositions = {}; // Store just the positions of widgets, not content
+let grid;
+
+// Function to load widget data from JSON
+async function loadWidgetData() {
+  try {
+    const response = await fetch('/src/widget.json');
+    if (!response.ok) {
+      throw new Error('Failed to load widget data');
+    }
+    
+    const data = await response.json();
+    
+    // Validate widget data structure
+    if (!Array.isArray(data)) {
+      throw new Error('Widget data is not an array');
+    }
+    
+    // Validate each widget has required properties
+    widgetData = data.filter(widget => {
+      return widget && 
+             typeof widget.id !== 'undefined' && 
+             widget.name && 
+             widget.children && 
+             Array.isArray(widget.defaultSize) && 
+             Array.isArray(widget.minSize) && 
+             Array.isArray(widget.maxSize);
+    });
+    
+    if (widgetData.length === 0) {
+      console.warn('No valid widgets found in data');
+    }
+    
+    populateWidgetLibrary();
+  } catch (error) {
+    console.error('Error loading widget data:', error);
+    // Show error message to user
+    const mainContent = document.getElementById('left_grid');
+    if (mainContent) {
+      mainContent.innerHTML = `
+        <div class="alert alert-danger">
+          <strong>Error!</strong> Failed to load widgets. Please try refreshing the page.
+        </div>
+      `;
+    }
+    widgetData = [];
+  }
+}
+
+// Function to populate the widget library sidebar
+function populateWidgetLibrary() {
+  const widgetLibrary = document.getElementById('widgetLibrary');
+  if (!widgetLibrary) return;
+  
+  widgetLibrary.innerHTML = '';
+  
+  widgetData.forEach(widget => {
+    // Only show widgets that are not currently on the grid
+    if (!activeWidgetIds.has(widget.id.toString())) {
+      const widgetElement = document.createElement('div');
+      widgetElement.className = 'sidebar-item grid-stack-item';
+      widgetElement.setAttribute('data-widget-id', widget.id);
+      
+      widgetElement.innerHTML = `
+        <div class="widget-header">
+          <div class="widget-icon">
+            <ion-icon name="${widget.pic || 'apps'}"></ion-icon>
+          </div>
+          <div>
+            <h4>${widget.name}</h4>
+            <p>${widget.description || ''}</p>
+          </div>
+        </div>
+      `;
+      
+      widgetLibrary.appendChild(widgetElement);
+    }
+  });
+  
+  // If in edit mode, make the sidebar items draggable
+  if (document.getElementById('editToggle')?.checked) {
+    setupWidgetDragging();
+  }
+}
+
+// Function to create a widget from the library with fresh content
+function createWidgetFromData(widgetId) {
+  const widget = widgetData.find(w => w.id.toString() === widgetId.toString());
+  if (!widget) return null;
+  
+  // Get position from saved layout if available
+  const position = widgetPositions[widgetId] || { x: 0, y: 0 };
+  
+  return {
+    x: position.x,
+    y: position.y,
+    w: widget.defaultSize[0],
+    h: widget.defaultSize[1],
+    minW: widget.minSize[0],
+    minH: widget.minSize[1],
+    maxW: widget.maxSize[0],
+    maxH: widget.maxSize[1],
+    content: `<div class="grid-stack-item-content">
+                <button class="close-btn" style="display: none" onclick="removeWidget(this)">×</button>
+                ${widget.children}
+              </div>`,
+    type: widget.name.toLowerCase().replace(/\s+/g, '-'),
+    id: widget.id.toString()
+  };
+}
+
+// Setup widget dragging from sidebar to grid
+function setupWidgetDragging() {
+  if (!grid) return;
+  
+  const dragWidgets = widgetData
+    .filter(widget => !activeWidgetIds.has(widget.id.toString()))
+    .map(widget => {
+      return {
+        w: widget.defaultSize[0],
+        h: widget.defaultSize[1],
+        minW: widget.minSize[0],
+        minH: widget.minSize[1],
+        maxW: widget.maxSize[0],
+        maxH: widget.maxSize[1],
+        content: `<div class="grid-stack-item-content">
+                    <button class="close-btn" style="display: flex" onclick="removeWidget(this)">×</button>
+                    ${widget.children}
+                  </div>`,
+        id: widget.id.toString()
+      };
+    });
+  
+  try {
+    GridStack.setupDragIn('.sidebar-item', { appendTo: 'body', helper: 'clone' }, dragWidgets);
+  } catch (e) {
+    console.error('Error setting up drag functionality:', e);
+  }
+}
+
+// Save just the layout positioning, not content
+function saveLayout() {
+  try {
+    const widgets = grid.save(true); // true to save DOM content
+    
+    // Only save the id and position data
+    const layoutData = widgets.map(widget => {
+      return {
+        id: widget.id,
+        x: widget.x,
+        y: widget.y,
+        w: widget.w,
+        h: widget.h
+      };
+    });
+    
+    // Save just the positions to localStorage
+    localStorage.setItem('executiveDashboardPositions', JSON.stringify(layoutData));
+    
+    // Update our runtime tracking
+    layoutData.forEach(widget => {
+      if (widget.id) {
+        widgetPositions[widget.id] = { 
+          x: widget.x, 
+          y: widget.y,
+          w: widget.w,
+          h: widget.h
+        };
+      }
+    });
+  } catch (e) {
+    console.error('Error saving layout:', e);
+  }
+}
+
+// Load layout - positions only, content comes from widgetData
+function loadLayout() {
+  try {
+    const savedLayout = localStorage.getItem('executiveDashboardPositions');
+    
+    if (savedLayout) {
+      // Parse the saved positions
+      const positions = JSON.parse(savedLayout);
+      
+      // Validate positions data
+      if (!Array.isArray(positions)) {
+        throw new Error('Invalid saved layout format');
+      }
+
+      // Clear the grid
+      grid.removeAll();
+      activeWidgetIds.clear();
+      widgetPositions = {};
+      
+      // Process each saved position
+      const widgetsToLoad = [];
+      
+      positions.forEach(position => {
+        if (!position.id) return;
+        
+        // Store position for future reference
+        widgetPositions[position.id] = {
+          x: position.x,
+          y: position.y,
+          w: position.w,
+          h: position.h
+        };
+        
+        // Find widget in our widget data
+        const widgetId = position.id.toString();
+        const widget = createWidgetFromData(widgetId);
+        
+        if (widget) {
+          // Apply saved dimensions if available
+          if (position.w) widget.w = position.w;
+          if (position.h) widget.h = position.h;
+          
+          widgetsToLoad.push(widget);
+          activeWidgetIds.add(widgetId);
+        }
+      });
+      
+      // Load all widgets at once for better performance
+      if (widgetsToLoad.length > 0) {
+        grid.load(widgetsToLoad);
+      } else {
+        // If no valid widgets found in saved layout, load defaults
+        loadInitialWidgets();
+      }
+    } else {
+      // No saved layout, load defaults
+      loadInitialWidgets();
+    }
+    
+    // Refresh the widget library based on active widgets
+    populateWidgetLibrary();
+    
+    // Initialize charts after widgets are loaded
+    setTimeout(initializeCharts, 200);
+  } catch (e) {
+    console.error('Error loading layout:', e);
+    loadInitialWidgets();
+  }
+}
+
+// Load initial widgets in default configuration
+function loadInitialWidgets() {
+  if (!grid) return;
+  
+  grid.removeAll();
+  activeWidgetIds.clear();
+  widgetPositions = {};
+  
+  // Load first 3 widgets by default if no saved layout exists
+  const defaultWidgets = widgetData.slice(0, Math.min(3, widgetData.length)).map((widget, index) => {
+    // Add to active widgets tracking
+    activeWidgetIds.add(widget.id.toString());
+    
+    // Get the default widget config
+    const newWidget = createWidgetFromData(widget.id);
+    
+    // Position the widgets horizontally
+    if (newWidget) {
+      newWidget.x = index * 4 % 12; // Distribute widgets across the grid
+      newWidget.y = Math.floor(index * 4 / 12) * 4; // Add new rows as needed
+      
+      // Store position for future reference
+      widgetPositions[widget.id] = {
+        x: newWidget.x,
+        y: newWidget.y,
+        w: newWidget.w,
+        h: newWidget.h
+      };
+    }
+    
+    return newWidget;
+  }).filter(Boolean); // Remove any null/undefined widgets
+  
+  if (defaultWidgets.length > 0) {
+    grid.load(defaultWidgets);
+    saveLayout(); // Save the default layout
+  }
+  
+  // Refresh the widget library
+  populateWidgetLibrary();
+  
+  // Initialize charts
+  setTimeout(initializeCharts, 200);
+}
+
+// Initialize charts in the dashboard
+function initializeCharts() {
+  try {
+    const analyticsChartCtx = document.getElementById('analyticsChart');
+    if (analyticsChartCtx && analyticsChartCtx.getContext) {
+      // First check if chart already exists and destroy it
+      const existingChart = Chart.getChart(analyticsChartCtx);
+      if (existingChart) {
+        existingChart.destroy();
+      }
+      
+      new Chart(analyticsChartCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          datasets: [{
+            label: 'Revenue ($)',
+            data: [12000, 19000, 15000, 22000, 18000, 24000],
+            backgroundColor: 'rgba(58, 123, 213, 0.6)',
+            borderColor: 'rgba(58, 123, 213, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Revenue'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Month'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Initialize other charts if needed...
+  } catch (e) {
+    console.error('Error initializing charts:', e);
+  }
+}
+
+// Compact the grid layout
+window.compact = function() {
+  if (grid) {
+    grid.compact();
+    saveLayout();
+  }
+};
+
+// Remove a widget from the grid
+window.removeWidget = function(button) {
+  if (!grid) return;
+  
+  const widget = button.closest('.grid-stack-item');
+  if (widget) {
+    // Get widget ID
+    const widgetId = widget.getAttribute('gs-id');
+    
+    // Remove from active widgets list
+    if (widgetId) {
+      activeWidgetIds.delete(widgetId);
+      
+      // Remove from positions tracking
+      delete widgetPositions[widgetId];
+      
+      // Refresh widget library to show the removed widget
+      populateWidgetLibrary();
+    }
+    
+    grid.removeWidget(widget, true, true);
+    saveLayout();
+  }
+};
+
+// Use DOMContentLoaded to ensure the DOM is ready
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    // Load widget data first
+    await loadWidgetData();
+    
+    // Configure GridStack rendering callback
+    GridStack.renderCB = function(el, w) {
+      if (el && w && w.content) {
+        el.innerHTML = w.content;
+      }
+    };
+
+    // Grid initialization options
+    const options = {
+      column: 12,
+      minRow: 10,
+      cellHeight: 70,
+      float: true,
+      removable: true,
+      acceptWidgets: true,
+      disableDrag: true,
+      styleInHead: true,
+      resizable: {
+        handles: 'e, se, s, sw, w'
+      }
+    };
+    
+    // Initialize the grid
+    grid = GridStack.init(options, '#left_grid');
+    
+    if (!grid) {
+      throw new Error('Failed to initialize GridStack');
+    }
+
+    // Initialize in non-edit mode
+    const editToggle = document.getElementById('editToggle');
+    const sidePanel = document.getElementById('sidePanel');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (editToggle && sidePanel && mainContent) {
+      editToggle.checked = false;
+      grid.enableMove(false);
+      grid.enableResize(false);
+      
+      // Edit mode toggle functionality
+      editToggle.addEventListener('change', function() {
+        const isEditMode = this.checked;
+        
+        // Update grid options
+        grid.enableMove(isEditMode);
+        grid.enableResize(isEditMode);
+        grid.opts.disableDrag = !isEditMode;
+        
+        // Toggle close buttons visibility
+        document.querySelectorAll('.close-btn').forEach(btn => {
+          btn.style.display = isEditMode ? 'flex' : 'none';
+        });
+        
+        // Toggle drag from sidebar
+        if (isEditMode) {
+          setupWidgetDragging();
+        } else {
+          document.querySelectorAll('.sidebar-item').forEach(el => {
+            el.draggable = false;
+          });
+          // Save layout when exiting edit mode
+          saveLayout();
+        }
+        
+        // Toggle panel visibility
+        sidePanel.classList.toggle('collapsed', !isEditMode);
+        mainContent.classList.toggle('expanded', !isEditMode);
+      });
+    }
+
+    // Handle widgets being dropped onto the canvas
+    grid.on('dropped', function(event, previousWidget, newWidget) {
+      // Get the widget ID
+      const widgetId = newWidget && newWidget.id;
+      
+      if (widgetId) {
+        // Add to active widgets list
+        activeWidgetIds.add(widgetId.toString());
+        
+        // Store position
+        widgetPositions[widgetId] = {
+          x: newWidget.x,
+          y: newWidget.y,
+          w: newWidget.w,
+          h: newWidget.h
+        };
+        
+        // Remove the widget from the panel by refreshing the library
+        populateWidgetLibrary();
+        
+        // Save the layout
+        saveLayout();
+        
+        // Initialize charts if needed
+        setTimeout(initializeCharts, 200);
+      }
+    });
+
+    // Save layout on grid changes
+    grid.on('added removed change', function() {
+      if (editToggle && editToggle.checked) {
+        saveLayout();
+      }
+    });
+
+    // Load the saved layout by default or initial widgets
+    loadLayout();
+  } catch (error) {
+    console.error('Dashboard initialization error:', error);
+    const mainContent = document.getElementById('left_grid');
+    if (mainContent) {
+      mainContent.innerHTML = `
+        <div class="alert alert-danger">
+          <strong>Error!</strong> Failed to initialize dashboard. Please check the console for details and try refreshing the page.
+        </div>
+      `;
+    }
+  }
+});
